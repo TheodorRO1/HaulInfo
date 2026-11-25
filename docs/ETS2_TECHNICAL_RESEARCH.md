@@ -526,33 +526,37 @@ ETS2's lighting system includes:
 **Licence:** GPL license. Implications for HaulInfo's licensing model must be evaluated independently.
 
 **Sources:**
-- GitHub repository for scs_t (accessed November 2026)
+- GitHub repository for scs_t (requires verification; November 2026). Note: The repository at https://github.com/nlhans/scs-sdk-plugin is the SCS telemetry SDK, not the SCS archive tool. The actual scs_t archive tool repository and its licence require further research.
 ## 9. Telemetry and ETS2 Integration
 
 ### 9.1 Official SCS Telemetry SDK
 
 SCS Software has released an official telemetry SDK. The SDK provides documented interfaces for reading certain game state information, but does not expose complete navigation-route geometry or all game state data. Refer to the SCS SDK plugin repository for documented fields.
 
-**Direct SDK documentation:**
+**Direct SDK repository:**
 - SCS SDK plugin repository (nlhans/scs-sdk-plugin): https://github.com/nlhans/scs-sdk-plugin
 - RenCloud scs-sdk-plugin: https://github.com/RenCloud/scs-sdk-plugin
 
-**Documented telemetry fields** (as reported by the SDK): player position, heading, speed, fuel level, engine RPM, and some navigation information. These fields provide high-level state data but do not include road-by-road route geometry.
+**SDK-explicitly exposed fields** (as defined in the SDK interfaces): player world position (x, y, z), heading/yaw, speed, fuel level, engine RPM. These fields provide high-level state data for the player's truck.
 
-**Unsupported assumptions:** Claims that telemetry exposes the complete navigation route are not supported by the SDK documentation. The detailed navigation graph is stored in game definition files (`.sii` within `.scs` archives) and is not available through telemetry interfaces.
+**Fields exposed by community plugins** (not officially documented): Additional telemetry fields have been reported by community-developed plugins (e.g., ets2mp, shared memory interfaces), including brake temperature, trailer attachment state, and dashboard indicators. These are not documented by SCS and may break between game updates.
+
+**Information not established by available evidence**: The SDK does not expose road-by-road route geometry, destination waypoint coordinates, AI traffic data, or any two-way modification of game state. Claims that telemetry includes route geometry are not supported by the SDK documentation. The detailed navigation graph is stored in game definition files (`.sii` within `.scs` archives) and is not available through telemetry interfaces.
 
 **Sources:**
-- SCS SDK plugin repository (nlhans/scs-sdk-plugin, RenCloud/scs-sdk-plugin)
-- SCS Software official channels
+- SCS SDK plugin repository (nlhans/scs-sdk-plugin, RenCloud/scs-sdk-plugin) — source code and README for explicitly documented fields
+- SCS Software official channels — announcement of telemetry SDK release
 
 ### 9.2 Telemetry Data Versus Complete Navigation Route
 
 Telemetry data can expose destination-related information such as destination city, estimated distance, and ETA. However, telemetry does not establish that it exposes the complete road-by-road route. The distinction is important: telemetry provides high-level state information (position, speed, fuel, destination city/ETA), but the detailed navigation graph — road-by-road routing data — is stored in the game's definition files (`.sii` within `.scs` archives) and is not fully available through telemetry interfaces.
 
-**Direct SDK reference:** SCS telemetry SDK documentation specifies reported fields but explicitly does not include complete route geometry.
+**SDK-documented fields** (per SCS telemetry SDK): destination city name, ETA, distance to destination. These are explicitly reported fields in the SDK interface specification.
+
+**Information not established by the SDK**: Route geometry (road-by-road routing), waypoint coordinates, AI traffic information, road classifications, or any navigable path data. The SDK documentation does not describe or support these data types. The detailed navigation graph is stored in game definition files (`.sii` within `.scs` archives) and is not available through telemetry interfaces.
 
 **Sources:**
-- SCS telemetry SDK documentation (specific field definitions)
+- SCS telemetry SDK documentation (field specification)
 - Community telemetry tool reports (2024-2026)
 
 ### 9.3 Shared Memory Interfaces
@@ -667,15 +671,15 @@ Any companion app would need to rely on a combination of telemetry data (for cur
 - Community best practices (2024-2026)
 ## 11. Legal and Licensing Considerations
 
-### 10.1 SCS Game Asset Extraction and Redistribution
+### 11.1 SCS Game Asset Extraction and Redistribution
 
 **Technical capability versus legal permission:** Extraction of game assets is technically feasible through archive format analysis. Whether such extraction is legally permissible depends on applicable copyright law, SCS Software's terms of use, and EULA provisions. No legal conclusion is offered regarding permissibility. Redistribution of modified game assets may violate copyright.
 
 **Sources:**
-- SCS Software terms of use
-- EULA review
+- SCS Software Terms of Use: https://www.scssoftware.com/terms
+- EULA review: https://www.scssoftware.com/eula (verified November 2026)
 
-### 10.2 Copyright and Derivative Assets
+### 11.2 Copyright and Derivative Assets
 
 **Copyright:** ETS2 game assets (models, textures, definition files) are copyrighted by SCS Software. Derivative works created from extracted data may infringe copyright.
 
@@ -683,28 +687,28 @@ Any companion app would need to rely on a combination of telemetry data (for cur
 - Copyright law
 - SCS Software EULA
 
-### 10.3 Steam Workshop Restrictions
+### 11.3 Steam Workshop Restrictions
 
 **Steam Workshop terms:** User-created content on Workshop is governed by Steam's Terms of Service and Workshop terms. Redistribution of Workshop content may be restricted.
 
 **Sources:**
-- Steam Terms of Service
-- Steam Workshop Terms
+- Steam Subscriber Agreement: https://www.valvesoftware.com/ssaseula
+- Steam Workshop Terms: https://steamcommunity.com/public/shared/workshopterms
 
-### 10.4 Mod Author Licences
+### 11.4 Mod Author Licences
 
 **Individual mod authors:** Mods on Workshop and other platforms are released under various licences (MIT, GPL, commercial, "all rights reserved"). Each mod's licence must be examined individually.
 
 **Examples:**
 - rigdeck (Matozanato): MIT licence — permissive reuse with attribution. Verified against current repository.
-- TruckNav-Sim: License requires verification against current repository state. Historically announced GPL-3.0 change in v0.3.2; the actual current license must be verified against the actual repository state before any reuse consideration.
+- TruckNav-Sim: The v0.3.2 release announced a change to GPL-3.0. The current repository licence identifies GPL version 3 or later. Verification against the actual current licence file is required before any reuse consideration.
 - Truck Companion: License requires verification against current repository state.
 
 **Sources:**
 - Individual mod licence files
 - Workshop page licence declarations
 
-### 10.5 Reverse Engineering and Interoperability
+### 11.5 Reverse Engineering and Interoperability
 
 **Legal status:** Reverse engineering for interoperability may be protected under fair use/digital copyright exceptions in some jurisdictions, but is not clearly established for game modding. The DMCA anti-circumvention provisions (US) may apply.
 
@@ -713,7 +717,7 @@ Any companion app would need to rely on a combination of telemetry data (for cur
 - Copyright law experts
 - Jurisdiction-specific legal advice recommended
 
-### 10.6 Licences of Existing Open-Source Projects
+### 11.6 Licences of Existing Open-Source Projects
 
 - **rigdeck (Matozanato):** MIT licence — permissive reuse with attribution. Verified against current repository.
 - **TruckNav-Sim (Rares-Muntean):** Requires current license verification. Historically announced GPL-3.0 change in v0.3.2; the actual current license in the repository must be checked before any reuse consideration.
@@ -722,7 +726,7 @@ Any companion app would need to rely on a combination of telemetry data (for cur
 **Sources:**
 - Repository license files
 
-### 10.7 Unresolved Legal Questions
+### 11.7 Unresolved Legal Questions
 
 - Whether extraction and analysis of game assets for personal use constitutes fair use.
 - Whether derivative map data from extracted game files is a copyright infringement.
@@ -860,7 +864,7 @@ These belong to later phases.
   - rigdeck: https://github.com/Matozanato/rigdeck (MIT licence, verified)
   - TruckNav-Sim: https://github.com/Rares-Muntean/TruckNav-Sim (license requires current verification; v0.3.2 release announced GPL-3.0 change)
   - Truck Companion: https://github.com/Nethercap/truck-companion (license requires current verification)
-  - scs_t: https://github.com/nlhans/scs-sdk-plugin (GPL license, evaluation required)
+  - scs_t: Requires identification of actual repository. The repository at https://github.com/nlhans/scs-sdk-plugin is the SCS telemetry SDK, not the SCS archive tool. The actual scs_t archive tool repository and its current licence status require further research. Marked as unresolved until verified.
 - SCS telemetry SDK documentation
   - https://github.com/nlhans/scs-sdk-plugin and https://github.com/RenCloud/scs-sdk-plugin
 - Community coordinate analysis projects
