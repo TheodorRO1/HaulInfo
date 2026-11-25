@@ -10,7 +10,7 @@ Define what HaulInfo is, its goals, design principles, and initial scope. Produc
 
 Research the latest released Android Auto version. Establish the exact feature list and reference behaviour for the first version.
 
-## Phase 2: ETS2 technical research
+## Phase 2: ETS2 technical research (In progress)
 
 Research ETS2 file formats, installation layout, DLC detection, and map mod support. Determine what map information can be extracted automatically.
 
