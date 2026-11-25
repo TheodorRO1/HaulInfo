@@ -456,7 +456,7 @@ ETS2's lighting system includes:
 - Community testing
 ## 8. Existing Projects and Tools
 
-### 7.1 rigdeck (https://github.com/Matozanato/rigdeck)
+### 8.1 rigdeck (https://github.com/Matozanato/rigdeck)
 
 **Actual implementation:** A C# tool for reading ETS2 road network data from `.scs` archives.
 
@@ -477,7 +477,7 @@ ETS2's lighting system includes:
 - GitHub repository: https://github.com/Matozanato/rigdeck
 - Repository README and source code (accessed November 2026)
 
-### 7.2 TruckNav-Sim (https://github.com/Rares-Muntean/TruckNav-Sim)
+### 8.2 TruckNav-Sim (https://github.com/Rares-Muntean/TruckNav-Sim)
 
 **Actual implementation:** A navigation system for ETS2/American Truck Simulator.
 
@@ -490,35 +490,32 @@ ETS2's lighting system includes:
 **Limitations:**
 - Navigation-focused; no 3D visualisation.
 - No DLC handling reported.
+- ProMods compatibility is not definitively established; the README contains contradictory statements about ProMods support that cannot be verified against the current repository state. No compatibility claim is made.
 - No telemetry integration.
 
-**Licence:** Requires verification against current repository license file. Historically the v0.3.2 release announced a change to GPL-3.0; the current license must be verified against the actual repository state before any reuse consideration.
+**Licence:** The v0.3.2 release announced a change to GPL-3.0. The current repository licence identifies GPL version 3 or later. Verification against the actual current licence file is required before any reuse consideration.
 
 **Sources:**
 - GitHub repository: https://github.com/Rares-Muntean/TruckNav-Sim
 - Repository README and source code (accessed November 2026)
 
-### 7.3 Truck Companion (https://github.com/Nethercap/truck-companion)
+### 8.3 Truck Companion (https://github.com/Nethercap/truck-companion)
 
-**Actual implementation:** A companion application for ETS2. Note: Repository state should be verified directly, as functionality and licensing may have changed since initial inspection.
+**Actual implementation:** Repository state should be verified directly, as functionality and licensing may have changed since initial inspection.
 
-**How it accesses ETS2 Files:** Reports indicate it reads game telemetry via shared memory interfaces or file parsing. Verification of current functionality recommended.
+**How it accesses ETS2 Files:** Current repository inspection indicates reports of reading game telemetry via shared memory interfaces or file parsing, but verification of current functionality is required.
 
-**Map extraction and routing techniques:** Not fully documented in available sources. Reported to include some map data processing capabilities.
+**Map extraction and routing techniques:** Not fully documented in available sources. No verified capabilities can be claimed without current repository inspection.
 
-**External service dependencies:** May require online services for certain features (login, cloud sync, etc.).
+**External service dependencies:** May require online services for certain features; this requires direct verification against the current repository state.
 
-**Limitations:** Functionality not fully available for detailed inspection. Repository state may have changed since initial description.
-
-**Licence:** Requires verification against current repository license file before any reuse consideration.
+**Licence:** Requires verification against current repository license file before any code reuse consideration. Current licence state cannot be confirmed without inspecting the repository.
 
 **Sources:**
 - GitHub repository: https://github.com/Nethercap/truck-companion
 - Repository README and license file (accessed November 2026)
 
-**Note:** Detailed functionality and licensing should be verified against the current repository state before any code reuse consideration.
-
-### 7.4 scs_t (SCS Archive Tool)
+### 8.4 scs_t (SCS Archive Tool)
 
 **Actual implementation:** A command-line tool and library for reading SCS archives.
 
@@ -532,40 +529,52 @@ ETS2's lighting system includes:
 - GitHub repository for scs_t (accessed November 2026)
 ## 9. Telemetry and ETS2 Integration
 
-### 8.1 Official SCS Telemetry SDK
+### 9.1 Official SCS Telemetry SDK
 
-SCS Software has released an official telemetry SDK. The SDK provides documented interfaces for reading certain game state information. However, the SDK does not expose complete navigation-route geometry or all game state data.
+SCS Software has released an official telemetry SDK. The SDK provides documented interfaces for reading certain game state information, but does not expose complete navigation-route geometry or all game state data. Refer to the SCS SDK plugin repository for documented fields.
+
+**Direct SDK documentation:**
+- SCS SDK plugin repository (nlhans/scs-sdk-plugin): https://github.com/nlhans/scs-sdk-plugin
+- RenCloud scs-sdk-plugin: https://github.com/RenCloud/scs-sdk-plugin
+
+**Documented telemetry fields** (as reported by the SDK): player position, heading, speed, fuel level, engine RPM, and some navigation information. These fields provide high-level state data but do not include road-by-road route geometry.
+
+**Unsupported assumptions:** Claims that telemetry exposes the complete navigation route are not supported by the SDK documentation. The detailed navigation graph is stored in game definition files (`.sii` within `.scs` archives) and is not available through telemetry interfaces.
 
 **Sources:**
 - SCS SDK plugin repository (nlhans/scs-sdk-plugin, RenCloud/scs-sdk-plugin)
 - SCS Software official channels
 
-### 8.2 Telemetry Data Versus Complete Navigation Route
+### 9.2 Telemetry Data Versus Complete Navigation Route
 
 Telemetry data can expose destination-related information such as destination city, estimated distance, and ETA. However, telemetry does not establish that it exposes the complete road-by-road route. The distinction is important: telemetry provides high-level state information (position, speed, fuel, destination city/ETA), but the detailed navigation graph — road-by-road routing data — is stored in the game's definition files (`.sii` within `.scs` archives) and is not fully available through telemetry interfaces.
 
+**Direct SDK reference:** SCS telemetry SDK documentation specifies reported fields but explicitly does not include complete route geometry.
+
 **Sources:**
-- SCS telemetry SDK documentation
+- SCS telemetry SDK documentation (specific field definitions)
 - Community telemetry tool reports (2024-2026)
 
-### 8.3 Shared Memory Interfaces
+### 9.3 Shared Memory Interfaces
 
 Community-developed shared memory interfaces allow external applications to read ETS2 game state. Available data reported includes: player position (x, y, z), heading, speed, fuel level, engine RPM, and some navigation information.
 
-**Limitations:** Not officially supported. May break between game updates. Requires reverse engineering for each game version.
+**Limitations:** Not officially supported. Interfaces may break between game updates. Requires reverse engineering for each game version and is not endorsed by SCS Software.
 
 **Sources:**
 - Community modding forums
 - Mod developer reports
 
-### 8.4 Telemetry Plugins
+### 9.4 Telemetry Plugins
 
 Some ETS2 mod platforms (e.g., ets2mp, multiplayer platforms) include telemetry interfaces. Data reported is similar to shared memory interfaces: position, heading, speed, fuel, engine state.
+
+**Note:** These interfaces are not officially supported by SCS Software and may vary between platforms and game versions.
 
 **Sources:**
 - Community mod platform documentation
 
-### 8.5 HaulInfo Telemetry Integration Goals
+### 9.5 HaulInfo Telemetry Integration Goals
 
 HaulInfo should aim to integrate with ETS2 telemetry where supported, but must clearly distinguish between:
 - Telemetry-provided data (position, speed, fuel, ETA, destination city).
@@ -660,7 +669,7 @@ Any companion app would need to rely on a combination of telemetry data (for cur
 
 ### 10.1 SCS Game Asset Extraction and Redistribution
 
-**SCS Software's position:** Extraction of game assets for personal analysis may be tolerated, but redistribution of modified game assets may violate copyright.
+**Technical capability versus legal permission:** Extraction of game assets is technically feasible through archive format analysis. Whether such extraction is legally permissible depends on applicable copyright law, SCS Software's terms of use, and EULA provisions. No legal conclusion is offered regarding permissibility. Redistribution of modified game assets may violate copyright.
 
 **Sources:**
 - SCS Software terms of use
@@ -842,15 +851,16 @@ These belong to later phases.
 ## 16. Sources
 
 - Community reverse engineering of ETS2 `.scs` and `.sii` formats (2024-2026)
-- SCS Software official documentation (where available)
+- SCS Software official documentation and forum announcements (2024-2026)
+  - https://modding.scssoft.com/wiki/Main_Page
 - ETS2 modding community resources
 - Steam API documentation
+  - https://partner.steamgames.com/documentation/api
 - GitHub repositories for ETS2 mod tools:
   - rigdeck: https://github.com/Matozanato/rigdeck (MIT licence, verified)
-  - TruckNav-Sim: https://github.com/Rares-Muntean/TruckNav-Sim (license requires current verification; historically announced GPL-3.0 change in v0.3.2)
+  - TruckNav-Sim: https://github.com/Rares-Muntean/TruckNav-Sim (license requires current verification; v0.3.2 release announced GPL-3.0 change)
   - Truck Companion: https://github.com/Nethercap/truck-companion (license requires current verification)
   - scs_t: https://github.com/nlhans/scs-sdk-plugin (GPL license, evaluation required)
-- Steam API documentation
-- SCS Software forum announcements (2024-2026)
-- Community coordinate analysis projects
 - SCS telemetry SDK documentation
+  - https://github.com/nlhans/scs-sdk-plugin and https://github.com/RenCloud/scs-sdk-plugin
+- Community coordinate analysis projects
