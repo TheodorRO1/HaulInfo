@@ -6,7 +6,7 @@ HaulInfo follows these phases. Each phase is completed and reviewed before movin
 
 Define what HaulInfo is, its goals, design principles, and initial scope. Produce the initial documentation.
 
-## Phase 1: Android Auto reference research (Under review)
+## Phase 1: Android Auto reference research (Completed)
 
 Research the latest released Android Auto version. Establish the exact feature list and reference behaviour for the first version.
 

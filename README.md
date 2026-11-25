@@ -41,7 +41,7 @@ These are planned capabilities, not features that already exist.
 | Phase | Name | Status |
 |-------|------|--------|
 | 0 | Product definition | Completed |
-| 1 | Android Auto reference research | Under review |
+| 1 | Android Auto reference research | Completed |
 | 2 | ETS2 technical research | Not started |
 | 3 | Architecture and technology selection | Not started |
 | 4 | Project foundation | Not started |
