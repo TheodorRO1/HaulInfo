@@ -25,6 +25,35 @@ Target game: Euro Truck Simulator 2
 
 Rendering framework, UI toolkit, and architecture will be selected in Phase 3 after research.
 
-## Repository
+## How it works
 
-https://github.com/TheodorRO1/HaulInfo
+These are planned capabilities, not features that already exist.
+
+| Part | What it does |
+|------|--------------|
+| PC application | Runs HaulInfo and provides the main interface while ETS2 is running. |
+| Phone companion app | Connects to the PC application and lets users control supported features from their phone. |
+| ETS2 | Provides the truck, game world and information needed for the experience. |
+| Navigation system | Uses locally generated map data based on the installed game files and is intended to synchronise with the game's navigation. |
+
+## Roadmap
+
+| Phase | Name | Status |
+|-------|------|--------|
+| 0 | Product definition | Completed |
+| 1 | Android Auto reference research | Not started |
+| 2 | ETS2 technical research | Not started |
+| 3 | Architecture and technology selection | Not started |
+| 4 | Project foundation | Not started |
+| 5 | Automatic ETS2 map generation | Not started |
+| 6 | Navigation and 3D rendering | Not started |
+| 7 | Android Auto interface recreation | Not started |
+| 8 | ETS2 integration | Not started |
+| 9 | Phone companion app and PC-to-phone communication | Not started |
+| 10 | Two-way ETS2 navigation synchronisation | Not started |
+| 11 | Testing and optimisation | Not started |
+| 12 | HaulInfo evolution and additional features | Not started |
+| 13 | Release and distribution | Not started |
+
+The full description of each phase is in docs/ROADMAP.md. The README roadmap and docs/ROADMAP.md are kept in sync.
+

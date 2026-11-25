@@ -2,7 +2,7 @@
 
 HaulInfo follows these phases. Each phase is completed and reviewed before moving to the next.
 
-## Phase 0: Product definition
+## Phase 0: Product definition (Completed)
 
 Define what HaulInfo is, its goals, design principles, and initial scope. Produce the initial documentation.
 
@@ -38,14 +38,22 @@ Recreate the Android Auto interface: dashboard, navigation, media, app launcher,
 
 Connect HaulInfo to ETS2 for live truck position and movement data.
 
-## Phase 9: Testing and optimisation
+## Phase 9: Phone companion app and PC-to-phone communication
+
+Research and implement PC-to-phone communication. Build the phone companion app so users can control supported HaulInfo features from their phone while playing ETS2.
+
+## Phase 10: Two-way ETS2 navigation synchronisation
+
+Synchronise HaulInfo navigation with the game's built-in navigation system in both directions. Selecting a destination in HaulInfo sends it to ETS2, and changing a destination in ETS2 updates HaulInfo.
+
+## Phase 11: Testing and optimisation
 
 Test the application, optimise resource usage and rendering performance, and verify no noticeable impact on ETS2.
 
-## Phase 10: HaulInfo evolution and additional features
+## Phase 12: HaulInfo evolution and additional features
 
 Add features beyond the initial Android Auto recreation based on the established product direction.
 
-## Phase 11: Release and distribution
+## Phase 13: Release and distribution
 
 Prepare and distribute the first release.

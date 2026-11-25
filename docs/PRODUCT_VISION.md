@@ -72,3 +72,45 @@ The application prioritises:
 - Offline functionality where required
 
 Frameworks, rendering technologies, libraries and architectural decisions are evaluated in Phase 3. They are not chosen yet.
+
+## Phone companion app
+
+HaulInfo should eventually include a companion app for mobile devices.
+
+The mobile app connects to the HaulInfo application running on the PC and allows users to control supported features from their phone while playing ETS2.
+
+Intended controls include:
+
+- Music playback and media controls
+- Radio controls
+- Volume
+- Switching between supported media sources
+- Other useful controls and information that make sense while driving in ETS2
+
+The goal is to let users control HaulInfo without constantly interacting with their PC.
+
+The phone app works together with the PC application, rather than being a completely separate product.
+
+How the phone connects to the PC, network communication, security, supported mobile platforms and implementation details will be investigated during the appropriate research and architecture phases.
+
+## Two-way ETS2 navigation synchronisation
+
+HaulInfo should eventually synchronise its navigation with the navigation system built into Euro Truck Simulator 2. Synchronisation works in both directions.
+
+HaulInfo to ETS2:
+
+- Select a destination or waypoint on the HaulInfo map.
+- Send it directly to ETS2.
+- The game receives it as a destination or waypoint where supported.
+
+ETS2 to HaulInfo:
+
+- Set or change a destination in the game's navigation system.
+- HaulInfo detects the change and updates its own navigation.
+- The active destination and route remain consistent between both applications.
+
+The goal is to let users switch between the two navigation interfaces without entering the same destination twice.
+
+This should eventually work alongside the phone companion app where appropriate, so that navigation changes made through supported interfaces remain consistent.
+
+This is a future feature. It is not implemented and its technical details have not been investigated. Feasibility, supported game interfaces and handling of route changes will be researched during the ETS2 technical research and architecture phases. Perfect two-way synchronisation is not promised until technical feasibility has been confirmed.

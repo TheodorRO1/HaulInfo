@@ -45,3 +45,18 @@ Documentation, code comments, commit messages, and other project text are writte
 - Document important decisions.
 
 Do not create meaningless commits for every individual line edit. Each meaningful completed task or change should have its own verified Git update.
+
+## Roadmap status synchronisation
+
+docs/ROADMAP.md is the detailed source of truth for project progress. The roadmap table in README.md must always match it.
+
+Whenever a phase starts, progresses, enters review or is completed:
+
+1. Update its status in docs/ROADMAP.md.
+2. Update the corresponding status in README.md.
+3. Make sure both files agree.
+4. Include the changes in the same meaningful Git commit as the work that caused the status change.
+
+Never leave the README roadmap outdated.
+
+Do not mark a phase as completed simply because its files have been created. Completion requires the phase's work to be checked and reviewed.
