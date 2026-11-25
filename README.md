@@ -42,7 +42,7 @@ These are planned capabilities, not features that already exist.
 |-------|------|--------|
 | 0 | Product definition | Completed |
 | 1 | Android Auto reference research | Completed |
-| 2 | ETS2 technical research | In progress |
+| 2 | ETS2 technical research | Under review |
 | 3 | Architecture and technology selection | Not started |
 | 4 | Project foundation | Not started |
 | 5 | Automatic ETS2 map generation | Not started |
