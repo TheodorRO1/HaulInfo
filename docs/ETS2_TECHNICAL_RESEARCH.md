@@ -490,10 +490,9 @@ ETS2's lighting system includes:
 **Limitations:**
 - Navigation-focused; no 3D visualisation.
 - No DLC handling reported.
-- ProMods compatibility is not definitively established; the README contains contradictory statements about ProMods support that cannot be verified against the current repository state. No compatibility claim is made.
-- No telemetry integration.
+- ProMods compatibility: The TruckNav-Sim README contains contradictory statements about ProMods support. Its feature list declares "Map Mods: Multiple Map Mods ✅", while its compatibility note warns ⚠️ "Caution Real Company Name Mods: Not supported anymore with the latest version." The v0.5.1 release (07 Oct 2026) explicitly announced "ProMods Compatibility: Updated ProMods definitions to the latest releases (2.84 & 1.64)." This indicates ProMods 2.84 and Canada 1.64 compatibility, but does not claim that every ProMods version is supported, nor does it mean that no ProMods compatibility evidence exists.
 
-**Licence:** The v0.3.2 release announced a change to GPL-3.0. The current repository licence identifies GPL version 3 or later. Verification against the actual current licence file is required before any reuse consideration.
+**Licence:** GPL-3.0. The v0.3.2 release announced a change to GPL-3.0. The current LICENSE file contains GPL-3.0.
 
 **Sources:**
 - GitHub repository: https://github.com/Rares-Muntean/TruckNav-Sim
@@ -539,25 +538,33 @@ SCS Software has released an official telemetry SDK. The SDK provides documented
 
 **SDK-explicitly exposed fields** (as defined in the SDK interfaces): player world position (x, y, z), heading/yaw, speed, fuel level, engine RPM. These fields provide high-level state data for the player's truck.
 
-**Fields exposed by community plugins** (not officially documented): Additional telemetry fields have been reported by community-developed plugins (e.g., ets2mp, shared memory interfaces), including brake temperature, trailer attachment state, and dashboard indicators. These are not documented by SCS and may break between game updates.
+**Community plugin implementation** (nlhans/ets2-sdk-plugin): This community-developed plugin uses the SCS telemetry SDK and exposes additional shared-memory output including player position, rotation, speed, RPM, fuel, job source/destination city names, and other truck/job information. Its README documents these shared-memory fields, but they are not all officially documented by the SCS SDK.
 
 **Information not established by available evidence**: The SDK does not expose road-by-road route geometry, destination waypoint coordinates, AI traffic data, or any two-way modification of game state. Claims that telemetry includes route geometry are not supported by the SDK documentation. The detailed navigation graph is stored in game definition files (`.sii` within `.scs` archives) and is not available through telemetry interfaces.
 
 **Sources:**
 - SCS SDK plugin repository (nlhans/scs-sdk-plugin, RenCloud/scs-sdk-plugin) — source code and README for explicitly documented fields
 - SCS Software official channels — announcement of telemetry SDK release
+- nlhans/ets2-sdk-plugin — community plugin README for shared-memory output fields
 
 ### 9.2 Telemetry Data Versus Complete Navigation Route
 
 Telemetry data can expose destination-related information such as destination city, estimated distance, and ETA. However, telemetry does not establish that it exposes the complete road-by-road route. The distinction is important: telemetry provides high-level state information (position, speed, fuel, destination city/ETA), but the detailed navigation graph — road-by-road routing data — is stored in the game's definition files (`.sii` within `.scs` archives) and is not fully available through telemetry interfaces.
 
-**SDK-documented fields** (per SCS telemetry SDK): destination city name, ETA, distance to destination. These are explicitly reported fields in the SDK interface specification.
+**SDK-documented fields**: The SCS telemetry SDK explicitly documents player world position (x, y, z), heading/yaw, speed, fuel level, and engine RPM. Fields such as destination city name, ETA, and distance to destination are reported by community plugins (e.g., nlhans/ets2-sdk-plugin) but are not universally defined in the SCS SDK channel specification.
+
+**Distinctions important for navigation**:
+- Job destination city is not a destination waypoint coordinate.
+- A route-distance value (e.g., `routeDistance`) is a scalar distance value, not a road-by-road route.
+- Player position and heading are not a navigable route graph.
+- Telemetry output does not establish that the application can modify the game's navigation state.
 
 **Information not established by the SDK**: Route geometry (road-by-road routing), waypoint coordinates, AI traffic information, road classifications, or any navigable path data. The SDK documentation does not describe or support these data types. The detailed navigation graph is stored in game definition files (`.sii` within `.scs` archives) and is not available through telemetry interfaces.
 
 **Sources:**
 - SCS telemetry SDK documentation (field specification)
 - Community telemetry tool reports (2024-2026)
+- nlhans/ets2-sdk-plugin — community plugin shared-memory output
 
 ### 9.3 Shared Memory Interfaces
 
@@ -701,7 +708,7 @@ Any companion app would need to rely on a combination of telemetry data (for cur
 
 **Examples:**
 - rigdeck (Matozanato): MIT licence — permissive reuse with attribution. Verified against current repository.
-- TruckNav-Sim: The v0.3.2 release announced a change to GPL-3.0. The current repository licence identifies GPL version 3 or later. Verification against the actual current licence file is required before any reuse consideration.
+- TruckNav-Sim: The v0.3.2 release announced a change to GPL-3.0. The current LICENSE file contains GPL-3.0.
 - Truck Companion: License requires verification against current repository state.
 
 **Sources:**
@@ -720,7 +727,7 @@ Any companion app would need to rely on a combination of telemetry data (for cur
 ### 11.6 Licences of Existing Open-Source Projects
 
 - **rigdeck (Matozanato):** MIT licence — permissive reuse with attribution. Verified against current repository.
-- **TruckNav-Sim (Rares-Muntean):** Requires current license verification. Historically announced GPL-3.0 change in v0.3.2; the actual current license in the repository must be checked before any reuse consideration.
+- **TruckNav-Sim (Rares-Muntean):** The v0.3.2 release announced a change to GPL-3.0. The current LICENSE file contains GPL-3.0.
 - **Truck Companion (Nethercap):** License requires verification against current repository state.
 
 **Sources:**
@@ -862,7 +869,7 @@ These belong to later phases.
   - https://partner.steamgames.com/documentation/api
 - GitHub repositories for ETS2 mod tools:
   - rigdeck: https://github.com/Matozanato/rigdeck (MIT licence, verified)
-  - TruckNav-Sim: https://github.com/Rares-Muntean/TruckNav-Sim (license requires current verification; v0.3.2 release announced GPL-3.0 change)
+  - TruckNav-Sim: https://github.com/Rares-Muntean/TruckNav-Sim (v0.3.2 release announced GPL-3.0 change; LICENSE file contains GPL-3.0)
   - Truck Companion: https://github.com/Nethercap/truck-companion (license requires current verification)
   - scs_t: Requires identification of actual repository. The repository at https://github.com/nlhans/scs-sdk-plugin is the SCS telemetry SDK, not the SCS archive tool. The actual scs_t archive tool repository and its current licence status require further research. Marked as unresolved until verified.
 - SCS telemetry SDK documentation
