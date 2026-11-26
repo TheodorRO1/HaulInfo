@@ -117,21 +117,21 @@ There are two primary approaches for reading `.scs` archives:
 
 Several open-source and community tools can read `.scs` archives:
 
-- **scs_t:** A command-line tool and library for reading SCS archives (GPL license). Provides direct access to archive contents without full extraction.
 - **open-source ETS2 modding tools:** Many mods for ETS2/American Truck Simulator include `.scs` reading code.
 - **Python libraries:** `python-scs` and similar wrappers exist for reading `.scs` archives in scripts.
 
-**Licensing evaluation required:** The project should evaluate these tools independently rather than committing to any as a dependency yet. The GPL license of `scs_t` may have implications for HaulInfo's licensing model, particularly if HaulInfo is not GPL-compatible.
+**Licensing evaluation required:** The project should evaluate these tools independently rather than committing to any as a dependency yet. The licence of `scs_t` has not been verified against the actual repository. The repository at https://github.com/nlhans/scs-sdk-plugin is the SCS telemetry SDK, not the SCS archive tool. The actual `scs_t` archive tool repository and its licence require further research.
 
 **Sources:**
-- GitHub repositories for `scs_t` and related tools (accessed November 2026)
+- GitHub repositories for SCS archive tools (accessed November 2026)
 - ETS2 modding community documentation
+- Note: The SCS telemetry SDK (nlhans/ets2-sdk-plugin) is separate from any SCS archive extraction tool.
 
 ### 1.4 File Formats Contained Within .scs
 
 `.scs` archives may contain various file types relevant to map data:
 
-- `.sii` (SCS Internal Information) — text/JSON definitions for roads, nodes, prefabs, etc. **Most relevant for map extraction.**
+- `.sii` (SCS Internal Information) — text-based definitions for roads, nodes, prefabs, etc. **Most relevant for map extraction.** (Not JSON; SCS-specific text format.)
 - `.3d` / `.mdl` — 3D model data.
 - `.tga` / `.dds` — texture files.
 - `.wav` / `.mp3` — audio.
@@ -521,13 +521,13 @@ ETS2's lighting system includes:
 
 ### 8.4 scs_t (SCS Archive Tool)
 
-**Actual implementation:** A command-line tool and library for reading SCS archives.
+**Actual implementation:** Archive tool repository and licence have not been verified as of the research date (November 2026).
 
-**How it accesses ETS2 files:** Provides direct access to archive contents without full extraction.
+**How it accesses ETS2 files:** Description pending verified repository inspection.
 
-**Capabilities:** Read archive headers and indexes, decompress individual files on demand.
+**Capabilities:** Description pending verified repository inspection.
 
-**Licence:** GPL license. Implications for HaulInfo's licensing model must be evaluated independently.
+**Licence:** Licence status pending verified repository inspection.
 
 **Sources:**
 - GitHub repository for scs_t (requires verification; November 2026). Note: The repository at https://github.com/nlhans/scs-sdk-plugin is the SCS telemetry SDK, not the SCS archive tool. The actual scs_t archive tool repository and its licence require further research.
@@ -588,6 +588,16 @@ Telemetry data can expose destination-related information such as destination ci
 - A route-distance value (e.g., `routeDistance`) is a scalar distance value, not a road-by-road route.
 - Player position and heading are not a navigable route graph.
 - Telemetry output does not establish that the application can modify the game's navigation state.
+
+**Information not established by the SDK**: Route geometry (road-by-road routing), waypoint coordinates, AI traffic information, road classifications, or any navigable path data. The SDK documentation does not describe or support these data types. The detailed navigation graph is stored in game definition files (`.sii` within `.scs` archives) and is not available through telemetry interfaces.
+
+**Navigation capability distinctions**:
+- Reading current player position and movement: Available via telemetry (position x,y,z, heading, speed).
+- Reading destination city, distance and ETA: Reported by community plugins (e.g., nlhans/ets2-sdk-plugin), but not universally defined in the SCS SDK channel specification.
+- Reading destination waypoint coordinates: No dedicated destination-waypoint coordinate channel was identified in the inspected SDK version.
+- Reading complete road-by-road route geometry: Not available through telemetry interfaces; requires extraction from game definition files (.sii within .scs archives).
+- Modifying the game's navigation destination: No publicly available interface supports modifying ETS2's navigation destination or providing two-way navigation synchronisation.
+- Two-way navigation synchronisation: No publicly available interface supports modifying ETS2's navigation destination or providing two-way navigation synchronisation. Interfaces exist for reading player state and navigation data, but not for sending destinations back to the game.
 
 **Information not established by the SDK**: Route geometry (road-by-road routing), waypoint coordinates, AI traffic information, road classifications, or any navigable path data. The SDK documentation does not describe or support these data types. The detailed navigation graph is stored in game definition files (`.sii` within `.scs` archives) and is not available through telemetry interfaces.
 
@@ -785,7 +795,7 @@ No unsupported numerical estimates (e.g., "20,000–30,000 base road segments", 
 **Performance:** LZMA compression offers better compression but slower decompression; LZ4 is faster but less compact. Reading individual files from `.scs` archives without full decompression is preferred for incremental processing.
 
 **Sources:**
-- scs_t performance data (2024-2026)
+- scs_t performance data (2024-2026, unverified — scs_t archive tool repository and licence not yet identified)
 - Community benchmarking
 
 ### 11.2 Road Graph Construction
@@ -847,8 +857,8 @@ These belong to later phases.
 2. `.scs` archives contain `.sii` definition files and binary asset data.
 3. Road network data is stored in text-based SCS definitions with road segments, nodes, and connections.
 4. DLCs add specific map regions with identifiable App IDs (list provided in Section 1.2).
-5. The ETS2 coordinate system uses metres with a defined origin (precise origin/scale unverified).
-6. No publicly available interface supports two-way navigation synchronisation with ETS2.
+5. The ETS2 coordinate system uses metres as the likely unit (based on observed coordinate ranges), but the exact origin, orientation, and scale remain unverified.
+6. No publicly available interface supports modifying ETS2's navigation destination or providing two-way navigation synchronisation. Interfaces exist for reading player state and navigation data, but not for sending destinations back to the game.
 7. Existing open-source projects (rigdeck, TruckNav-Sim) provide partial extraction capabilities under verified licences.
 
 **Likely findings (unverified but probable):**
