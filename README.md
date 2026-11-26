@@ -8,7 +8,7 @@ The first version focuses on getting the Android Auto experience right rather th
 
 ## Status
 
-This project is in Phase 0 (product definition). No application code has been written yet. Framework, rendering, and architecture decisions have not been made.
+This project is in Phase 2 — ETS2 Technical Research (Under review). No application implementation has started. Architecture, framework and rendering decisions remain for Phase 3.
 
 ## Planned scope
 
