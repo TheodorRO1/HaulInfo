@@ -3,7 +3,7 @@
 **Project:** HaulInfo  
 **Phase:** Phase 2 — ETS2 Technical Research  
 **Status:** Under review  
-**Research date:** November 26, 2026
+**Research date:** November 26, 2026  
 ## 1. ETS2 Installation and Game-Files Locations
 
 ### 1.1 Typical Installation Structure
@@ -13,87 +13,36 @@ Euro Truck Simulator 2 is typically installed through Steam with the following s
 - **Default Steam location:** `C:\Program Files (x86)\Steam\steamapps\common\Euro Truck Simulator 2\`
 - **Non-default Steam libraries:** Users may install Steam and/or ETS2 on a different drive or partition. Steam supports multiple libraries, so ETS2 could be located at `D:\Steam\steamapps\common\Euro Truck Simulator 2\`, `E:\Games\Steam\steamapps\common\Euro Truck Simulator 2\`, or any user-specified location under a Steam library folder.
 
-**Installation discovery:** HaulInfo should discover installations by scanning Steam library folders rather than assuming a fixed path. The approach:
-
-1. Locate all Steam library folders via the Steam registry key (`HKLM\Software\Wow6432Node\Valve\Steam\SteamPath`) or the `steamapps\libraryfolders.vdf` file.
-2. Under each library folder, look for `appmanifest_227300.acf` (the AppManifest for ETS2, App ID 227300).
-3. Parse the `installdir` field from the ACF file to determine the actual ETS2 installation path.
-
-**Sources:**
-- Steam API documentation
-- ACF file format specification from reverse engineering efforts
-- Community documentation of ETS2 App IDs and DLC structure
-
 ### 1.2 Base Game and DLC Content
 
 The ETS2 installation distinguishes between:
 
 - **Base game:** Files included with the initial purchase.
 - **DLC content:** Paid expansions that add new map areas, vehicles, companies, and cargo types.
-- **Map mods:** User-installed modifications (e.g., "Promods", "ETS2 Asia", "Scandinavia") that add additional territory.
+- **Map mods:** User-installed modifications (e.g., "ProMods", "ETS2 Asia", "Scandinavia") that add additional territory.
 
-**DLC identification:** DLCs can be identified by reading all `appmanifest_*.acf` files in the Steam libraries. Each DLC has its own App ID. The following table lists known ETS2 DLC App IDs:
+DLCs may add additional content within the ETS2 installation directory, potentially including additional `.scs` archive files. DLC ownership and entitlement cannot be determined from local installation files alone.
 
-| DLC | App ID | Description |
-|-----|--------|-------------|
-| DLC Pack 1 (Italy) | 247840 | Italian map expansion |
-| DLC Pack 2 (Germany) | 268730 | German map expansion |
-| DLC Pack 3 (France) | 275070 | French map expansion |
-| Going East! (Magdeburg) | 276210 | Magdeburg area |
-| Scandinavia | 296190 | Scandinavian map |
-| Italia | 333260 | Italian map |
-| Portugal | 370440 | Portuguese map |
-| East Expansion | 392020 | Eastern European expansion |
-| Baltic States | 438470 | Baltic region map |
-| Vive la France | 476210 | French expansion |
-| Road to the Black Sea | 551220 | Black Sea region |
-| Kružok (Czech Republic/Slovakia) | 595290 | Czech/Slovak region |
-| Hellas (Greece) | 656800 | Greek map |
-| Treload Map | 697900 | Reload map |
-| Sweet Water County | 825120 | County-level map |
+### 1.3 ETS2 Installation Discovery
 
-The ACF files contain a `from_app` field indicating which app installed them, and a `tags` field that may indicate "dlc".
+HaulInfo automatically discovers ETS2 installations as quickly and efficiently as possible. The discovery process:
 
-**Sources:**
-- Steam application info API
-- Community documentation of ETS2 App IDs
-- ACF file format reverse engineering
+1. **Fast, low-cost methods first:** Check known standard ETS2 installation locations.
+2. **Narrowly scoped local metadata:** Read relevant local Windows registry information and Steam installation metadata solely to locate ETS2 efficiently. This does not require Steam login, Steam account access, online Steam APIs, or Steamworks.
+3. **Candidate validation:** Check a small number of known ETS2 files to validate each candidate installation. Do not perform recursive or exhaustive filesystem scans.
+4. **Multiple candidates:** If more than one installation is found, present the candidate locations to the user for selection.
+5. **Manual fallback:** If automatic discovery fails, provide manual directory selection.
+6. **No persistent storage:** Discovered ETS2 installation paths are held in memory only and are not persistently saved.
 
-### 1.3 Installation Discovery Without Manual File Location
+This approach prioritises fast automatic discovery while respecting filesystem access boundaries. Reading local installation metadata is permitted solely for efficient ETS2 discovery. HaulInfo does not depend on Steam and does not access Steam accounts.
 
-HaulInfo should not require users to manually locate ETS2 files. The application should:
-
-1. Query the Steam API (or simulate it via registry/VDF parsing) to find all installed apps.
-2. Identify App ID 227300 as ETS2.
-3. Identify all DLC App IDs and their relationships.
-4. Determine the installed path from the ACF `installdir` field.
-5. Enumerate the game directory for relevant file types (`.scs`, `.sii`, etc.).
-
-This approach makes HaulInfo usable on any Windows system without requiring the user to browse to their game installation.
-
-**Uncertainty:** The reliability of registry/VDF parsing may vary with Steam version, user configuration, or portable Steam installations. Testing with multiple Steam configurations is recommended.
-
-### 1.5 Installation Outside Standard Steam Directory
-
-When ETS2 is installed outside the standard Steam directory:
-
-- The Steam library folder location may differ from the default (`Program Files (x86)\Steam`).
-- The `steamapps\libraryfolders.vdf` file lists all library paths.
-- The `appmanifest_227300.acf` `installdir` field gives the actual ETS2 directory.
-- Portable Steam installations may not have registry keys; the `libraryfolders.vdf` file is the primary discovery method.
-
-**Uncertainty:** Detecting portable or custom Steam installations requires checking both registry and `libraryfolders.vdf`. Some users may have multiple Steam installations across different drives.
-
-**Sources:**
-- Steam API documentation
-- Community reports on multi-library and portable Steam setups
 ## 2. SCS Archive Format and Extraction
 
-### 1.1 Archive Structure
+### 2.1 Archive Structure
 
 Euro Truck Simulator 2 uses the `.scs` (SCS Container) archive format extensively for all mod and base game content. An `.scs` file is a compressed archive containing game assets.
 
-**Basic structure:**
+**Basic structure:** (unverified — community reverse engineering; not confirmed against primary SCS documentation)
 - Header with metadata (file name, size, format version, content type).
 - Index table mapping logical names to physical offsets within the archive.
 - Compressed file data using one of several compression methods.
@@ -102,18 +51,18 @@ Euro Truck Simulator 2 uses the `.scs` (SCS Container) archive format extensivel
 - Community reverse engineering of SCS format
 - ETS2 mod SDK documentation
 
-### 1.2 File Access Approaches
+### 2.2 File Access Approaches
 
 There are two primary approaches for reading `.scs` archives:
 
-1. **Direct access without extraction:** Read the archive header and index, then decompress individual files on demand. This avoids writing temporary files and is suitable for offline operation.
-2. **Extract to disk:** Extract all or selected files to a temporary directory, then read them using standard file I/O. Simpler to implement but requires disk space and temporary file cleanup.
+1. **Direct access without extraction:** Read the archive header and index, then decompress individual files on demand. This avoids writing temporary files and is suitable for offline operation. **(Technical feasibility unverified: depends on confirming `.scs` archive structure and `.sii` format, which Sections 2.1 and 2.4 identify as unverified community reverse engineering.)**
+2. **Extract to disk:** Extract all or selected files to a temporary directory, then read them using standard file I/O. This is a general technical alternative only — not an approved HaulInfo design, not permitted under current HaulInfo requirements without explicit user approval, and not part of the current preferred in-memory processing approach.
 
 **Sources:**
 - scs_t tool documentation
 - ETS2 modding community tools
 
-### 1.3 Existing Tools and Libraries
+### 2.3 Existing Tools and Libraries
 
 Several open-source and community tools can read `.scs` archives:
 
@@ -127,17 +76,17 @@ Several open-source and community tools can read `.scs` archives:
 - ETS2 modding community documentation
 - Note: The SCS telemetry SDK (nlhans/ets2-sdk-plugin) is separate from any SCS archive extraction tool.
 
-### 1.4 File Formats Contained Within .scs
+### 2.4 File Formats Contained Within .scs
 
 `.scs` archives may contain various file types relevant to map data:
 
-- `.sii` (SCS Internal Information) — text-based definitions for roads, nodes, prefabs, etc. **Most relevant for map extraction.** (Not JSON; SCS-specific text format.)
+- `.sii` (SCS Internal Information) — text-based definitions for roads, nodes, prefabs, etc. **Most relevant for map extraction.** (Not JSON; SCS-specific text format.) (unverified — community reverse engineering; not confirmed against primary SCS documentation)
 - `.3d` / `.mdl` — 3D model data.
 - `.tga` / `.dds` — texture files.
 - `.wav` / `.mp3` — audio.
 - `.scol` — collision data.
 
-**.sii files** contain the road network, node positions, and junction data in text format. These are the primary target for map extraction.
+**.sii files** contain the road network, node positions, and junction data in text format. These are the primary target for map extraction. (unverified — community reverse engineering; not confirmed against primary SCS documentation)
 
 **Sources:**
 - Community reverse engineering of SCS format
@@ -145,10 +94,10 @@ Several open-source and community tools can read `.scs` archives:
 - Analysis of base game `.scs` contents
 ## 3. Road Geometry and Graph Reconstruction
 
-### 2.1 ETS2 Coordinate System
+### 3.1 ETS2 Coordinate System
 
 ETS2 uses a coordinate system where:
-- Units are likely metres (based on observed coordinate ranges).
+- Units are likely metres (based on observed coordinate ranges). (unverified — community analysis of ETS2 coordinate data; not confirmed against primary SCS documentation)
 - The world is modelled as a flat or gently curving plane (no spherical mapping).
 - Coordinates are three-dimensional (x, y, z), though y may represent elevation/height.
 
@@ -158,7 +107,7 @@ ETS2 uses a coordinate system where:
 - Community analysis of ETS2 coordinate data (2024-2026)
 - Modding documentation
 
-### 2.2 Coordinate Transformations
+### 3.2 Coordinate Transformations
 
 Any conversion from ETS2 coordinates to a mapping framework (e.g., OpenStreetMap, Google Maps) requires:
 - Understanding the origin and orientation of the ETS2 coordinate system.
@@ -171,7 +120,7 @@ Any conversion from ETS2 coordinates to a mapping framework (e.g., OpenStreetMap
 - Community coordinate analysis (2024-2026)
 - Modding documentation
 
-### 2.3 Road Segment Geometry
+### 3.3 Road Segment Geometry
 
 Road segments have:
 - Start and end node references.
@@ -182,7 +131,7 @@ Road segments have:
 - Community analysis of ETS2 road geometry (2024-2026)
 - Modding documentation
 
-### 2.4 Node Connectivity and Topology
+### 3.4 Node Connectivity and Topology
 
 The road network as a graph:
 - Nodes as vertices.
@@ -192,7 +141,7 @@ The road network as a graph:
 - Community analysis of ETS2 road network (2024-2026)
 - Modding documentation
 
-### 2.5 Junctions and Complex Features
+### 3.5 Junctions and Complex Features
 
 - **Roundabouts:** Encoded as special node types with circulatory road segments.
 - **Interchanges:** Multi-segment connections with loop roads.
@@ -202,9 +151,9 @@ The road network as a graph:
 - Community analysis of ETS2 junctions (2024-2026)
 - Modding documentation
 
-### 2.6 Road Definitions and Properties
+### 3.6 Road Definitions and Properties
 
-Road definitions in ETS2 include numerous properties that affect navigation:
+Road definitions in ETS2 include numerous properties that affect navigation (unverified — community analysis of `.sii` files; not confirmed against primary SCS documentation):
 - Road type and class.
 - Speed limit.
 - Number of lanes.
@@ -219,7 +168,7 @@ Road definitions in ETS2 include numerous properties that affect navigation:
 - Reverse-engineered format specifications
 ## 4. Map Data and Road-Network Structure
 
-### 3.1 ETS2 Road Network Structure
+### 4.1 ETS2 Road Network Structure
 
 The ETS2 road network is defined through a combination of data structures:
 
@@ -244,9 +193,9 @@ The ETS2 road network is defined through a combination of data structures:
 - Community analysis of ETS2 `.sii` files (2024-2026)
 - Modding documentation
 
-### 3.2 Map Sectors and Spatial Organisation
+### 4.2 Map Sectors and Spatial Organisation
 
-ETS2 organises its map into sectors for efficient loading and rendering. Each sector contains a portion of the road network, prefabs, and environmental objects. The sector boundaries roughly correspond to the map regions added by DLCs.
+ETS2 organises its map into sectors for efficient loading and rendering (unverified — community analysis of ETS2 map organisation; not confirmed against primary SCS documentation). Each sector contains a portion of the road network, prefabs, and environmental objects. The sector boundaries roughly correspond to the map regions added by DLCs.
 
 **Importance for HaulInfo:**
 - Determining which files contain data for a given map area.
@@ -257,7 +206,7 @@ ETS2 organises its map into sectors for efficient loading and rendering. Each se
 - Community analysis of ETS2 map organisation (2024-2026)
 - Modding documentation
 
-### 3.3 Prefabs, Intersections and Junctions
+### 4.3 Prefabs, Intersections and Junctions
 
 ETS2 uses "prefabs" (prefabricated objects) to represent complex road features:
 
@@ -276,7 +225,7 @@ Each prefab has definitions for:
 - Modding documentation
 ## 5. Coordinate Systems and Navigation Compatibility
 
-### 4.1 ETS2 Coordinate System
+### 5.1 ETS2 Coordinate System
 
 ETS2 uses a coordinate system where:
 - Units are likely metres (based on observed coordinate ranges).
@@ -289,7 +238,7 @@ ETS2 uses a coordinate system where:
 - Community analysis of ETS2 coordinate data (2024-2026)
 - Modding documentation
 
-### 4.2 Coordinate Transformations
+### 5.2 Coordinate Transformations
 
 Any conversion from ETS2 coordinates to a mapping framework (e.g., OpenStreetMap, Google Maps) requires:
 - Understanding the origin and orientation of the ETS2 coordinate system.
@@ -302,7 +251,7 @@ Any conversion from ETS2 coordinates to a mapping framework (e.g., OpenStreetMap
 - Community coordinate analysis (2024-2026)
 - Modding documentation
 
-### 4.3 Road Segment Geometry
+### 5.3 Road Segment Geometry
 
 Road segments have:
 - Start and end node references.
@@ -313,7 +262,7 @@ Road segments have:
 - Community analysis of ETS2 road geometry (2024-2026)
 - Modding documentation
 
-### 4.4 Node Connectivity and Topology
+### 5.4 Node Connectivity and Topology
 
 The road network as a graph:
 - Nodes as vertices.
@@ -323,7 +272,7 @@ The road network as a graph:
 - Community analysis of ETS2 road network (2024-2026)
 - Modding documentation
 
-### 4.5 Junctions and Complex Features
+### 5.5 Junctions and Complex Features
 
 - **Roundabouts:** Encoded as special node types with circulatory road segments.
 - **Interchanges:** Multi-segment connections with loop roads.
@@ -333,9 +282,9 @@ The road network as a graph:
 - Community analysis of ETS2 junctions (2024-2026)
 - Modding documentation
 
-### 4.6 Road Definitions and Properties
+### 5.6 Road Definitions and Properties
 
-Road definitions in ETS2 include numerous properties that affect navigation:
+Road definitions in ETS2 include numerous properties that affect navigation (unverified — community analysis of `.sii` files; not confirmed against primary SCS documentation):
 - Road type and class.
 - Speed limit.
 - Number of lanes.
@@ -350,7 +299,7 @@ Road definitions in ETS2 include numerous properties that affect navigation:
 - Reverse-engineered format specifications
 ## 6. 3D Assets, Buildings, Landmarks and Rendering Considerations
 
-### 5.1 Buildings and Landmarks
+### 6.1 Buildings and Landmarks
 
 ETS2 includes 3D models for:
 - Service stations.
@@ -364,7 +313,7 @@ Model formats appear to be based on or converted from industry-standard 3D forma
 - Community analysis of ETS2 3D assets (2024-2026)
 - Modding documentation
 
-### 5.2 Prefab Models and Object Placements
+### 6.2 Prefab Models and Object Placements
 
 Prefabs are instanced throughout the map. Each placement references a model file and defines:
 - Position.
@@ -376,7 +325,7 @@ Prefabs are instanced throughout the map. Each placement references a model file
 - Community analysis of ETS2 prefabs (2024-2026)
 - Modding documentation
 
-### 5.3 Terrain and Elevation
+### 6.3 Terrain and Elevation
 
 ETS2's world has elevation data used for:
 - Road grading.
@@ -388,7 +337,7 @@ The elevation data may be derivable from the road network itself (road segments 
 - Community analysis of ETS2 elevation data (2024-2026)
 - Modding documentation
 
-### 5.4 Materials and Textures
+### 6.4 Materials and Textures
 
 Road surfaces, building materials, and environmental props use texture files (TGA, DDS). These are applied to 3D models via material definitions.
 
@@ -396,7 +345,7 @@ Road surfaces, building materials, and environmental props use texture files (TG
 - Community analysis of ETS2 textures (2024-2026)
 - Modding documentation
 
-### 5.5 Lighting and Environment
+### 6.5 Lighting and Environment
 
 ETS2's lighting system includes:
 - Day/night cycle.
@@ -408,52 +357,44 @@ ETS2's lighting system includes:
 - Modding documentation
 ## 7. DLC and Map-Mod Handling
 
-### 6.1 Map Mods and Steam Workshop
+### 7.1 Local ETS2 Mod Resources
 
-**Steam Workshop mod locations:**
-- Workshop mods are stored in `Steam\userdata\<user_id>\<workshop_id>\` folders.
-- Local mod copies may be found in the ETS2 `mod` folder: `Documents\Euro Truck Simulator 2\mod\`.
+**A. Base-game and DLC resources**
 
-**Mod metadata:** Workshop items have metadata including title, description, tags, and file ID. The `Steamworks API` can retrieve this information, but requires user authentication.
+Base-game and DLC resources are locally available inside the selected ETS2 installation directory. These include `.scs` archive files containing game assets, map data, and definition files.
 
-**Enabled and disabled mods:** ETS2 uses a profile-based mod system. Mod enablement is configured in the game's profile settings (`Settings > Mods`). The game determines which mods are active based on the selected profile.
+**B. Mods inside the installation directory**
 
-**Mod load order and priority:** Users configure mod load order in the game settings. When multiple mods define the same road segment or node, the last-loaded mod's definitions take priority, or the game may merge definitions based on conflict resolution rules.
+Mods that happen to be present inside the permitted ETS2 installation directory may be inspected if they are actually present. HaulInfo does not assume all mods are stored in this location.
 
-**Map expansion dependencies and conflicts:** Some map mods (e.g., Promods) have dependencies on other mods or ETS2 DLCs. Conflicting definitions may cause one mod's features to override another's.
+**C. Mods in the separate ETS2 user-data directory**
 
-**Sources:**
-- ETS2 modding community documentation
-- Steam Workshop API documentation
-- ETS2 profile system documentation
+Map mods such as ProMods may be stored in the separate ETS2 user-data directory. Access to this directory is future planned access and is not part of this task. When implemented later, access will remain restricted to the specific ETS2 user-data directory and relevant subdirectories, without scanning the entire Documents directory.
 
-### 6.2 DLC Detection and Actual Content Identification
+Do not assume all mods are stored in one location. Mods may be distributed between the installation directory and the user-data directory.
 
-- **DLC ownership:** Identified via ACF parsing (App IDs listed in Section 1.2).
-- **DLC enabled:** Ownership does not guarantee the DLC is enabled in the current game profile.
-- **Actual map content:** DLCs add `.scs` files to the game directory and/or modify game definitions. The actual map territory added depends on which DLCs are enabled in the current profile.
+### 7.2 DLC Detection and Actual Content Identification
+
+- **Local content presence:** HaulInfo may identify `.scs` archive files actually present inside the permitted ETS2 installation directory, provided the identification method is evidence-backed. Local file presence indicates content is installed but does not prove DLC ownership or entitlement.
+- **DLC ownership or entitlement:** HaulInfo does not determine DLC ownership or entitlement from local files alone. Local file presence does not establish that the user owns or is entitled to a specific DLC.
+- **Active game configuration:** Installed content may not be active in the current game configuration. HaulInfo does not assume that installed DLC `.scs` files are necessarily enabled or used by the current game profile.
+- **DLC identification:** HaulInfo does not assume that every `.scs` file can be reliably assigned to a specific DLC without evidence. Assignment of archive files to specific DLCs is not established without a verified identification method.
 
 **What HaulInfo could reliably detect:**
-- DLC ownership (ACF parsing).
-- DLC-enabled status (requires reading game profile configuration, which may require game interaction).
+- Presence of `.scs` archive files inside the ETS2 installation directory, if an evidence-backed identification method is available.
 
 **What remains uncertain:**
-- Which specific `.scs` files belong to which DLC when multiple DLCs are enabled.
+- Which specific `.scs` files belong to which DLC when multiple DLCs are present.
+- Whether installed DLC content is active in the current game configuration.
 - How overlapping map territories from different DLCs are merged or conflict.
 
-**Sources:**
-- ETS2 profile system documentation
-- Community testing of DLC activation
+### 7.3 Overridden Assets and Duplicate Definitions
 
-### 6.3 Overridden Assets and Duplicate Definitions
-
-- When multiple mods define the same road segment or node, ETS2 uses a priority system based on load order.
-- The game may merge definitions or let the last-loaded mod override earlier ones.
-- This affects map extraction: HaulInfo must handle potential definition conflicts, particularly when multiple map mods (e.g., Promods + Scandinavia) are active.
+- When multiple mods define the same road segment or node, the behaviour depends on ETS2's internal mod handling, which is not fully documented in sources available to this research.
+- This affects map extraction: definition conflicts between multiple mods are possible but the exact resolution behaviour is unverified.
 
 **Sources:**
-- ETS2 mod compatibility reports
-- Community testing
+- ETS2 modding community documentation (unverified regarding specific conflict resolution behaviour)
 ## 8. Existing Projects and Tools
 
 ### 8.1 rigdeck (https://github.com/Matozanato/rigdeck)
@@ -639,83 +580,60 @@ Any companion app would need to rely on a combination of telemetry data (for cur
 - Mod developer reports
 ## 10. Offline Extraction, Caching and Update Detection
 
-### 9.1 Automatic Game and DLC Discovery
+### 10.1 Local Resource Enumeration
 
-**Approach:** Scan Steam library folders, parse ACF files, identify App IDs and installdir paths (as described in Section 1.1-1.3).
+Resource enumeration starts from the discovered or user-selected ETS2 installation directory. Only that directory and its relevant subdirectories are accessed. No exhaustive computer-wide scanning is performed.
 
-**Reliability:** High for standard Steam installations. Lower for portable Steam, multiple library folders, or non-standard installations.
+### 10.2 Active Map Configuration Detection
 
-**Sources:**
-- Steam API documentation
-- Community testing (2024-2026)
+Relevant `.scs` files in the ETS2 installation directory are enumerated. Definition files are parsed using evidence-backed methods only. No assumption is made that all mods are accessible from the installation directory alone.
 
-### 9.2 Active Map Configuration Detection
+### 10.3 Local Extraction Approaches
 
-**Approach:** Enumerate `.scs` files in the game directory, parse definition files to identify road network coverage, cross-reference with DLC App IDs and mod enablement status.
+**Direct access:** Read `.scs` archive headers and indexes, decompress `.sii` files on demand without writing to disk. This is the preferred approach. **Technical feasibility not yet verified: it depends on confirming the `.scs` archive structure and `.sii` format, which Sections 2.1 and 2.4 currently identify as unverified community reverse engineering. The ability to read archive indexes or decompress files directly is not yet a demonstrated HaulInfo capability.**
 
-**Reliability:** Moderate. Some map mods may not follow expected naming conventions or may be installed in non-standard locations.
+Extraction to a temporary disk directory is not an approved approach for HaulInfo. Any disk-based extraction would require explicit user approval and is a future design decision.
 
-**Sources:**
-- ETS2 mod directory structures (2024-2026)
-- Community mod management practices
+### 10.4 Incremental Versus Full Rebuilds
 
-### 9.3 Local Extraction Approaches
-
-**Direct access:** Read `.scs` archive headers and indexes, decompress `.sii` files on demand without writing to disk.
-
-**Extract to disk:** Extract all or selected content to a temporary directory for standard file I/O.
-
-**Sources:**
-- scs_t tool
-- Community extraction utilities (2024-2026)
-
-### 9.4 Incremental Versus Full Rebuilds
-
-- **Incremental:** Update only changed data (new DLC, mod updates). Requires detecting changes in ACF `buildid` fields, `.scs` file modification times, and definition content changes.
+- **Incremental:** Update only changed data. Requires detecting changes in locally observed file modification times and definition content changes.
 - **Full rebuild:** Re-extract and re-process all content. Simpler but computationally more expensive.
 
-**Sources:**
-- Community mod update workflows (2024-2026)
+### 10.5 Cache Invalidation
 
-### 9.5 Cache Invalidation
+Any cached or extracted data is held temporarily in memory during a running session and is discarded when the session ends or when no longer needed. HaulInfo does not persistently store caches, extraction results, or filesystem indexes.
 
-**Approaches:**
-- Track ACF `buildid` changes.
-- Track `.scs` file modification times.
-- Track mod enable/disable state changes from the game profile.
-- Invalidate entire cache on game version update or profile change.
+Temporary in-memory data may be discarded or recalculated during a running session if:
+- An `.scs` file modification time changes.
+- Definition file content changes.
+- A game version update is detected.
 
-**Sources:**
-- Community mod management practices (2024-2026)
+Persistent cache invalidation, profile monitoring, or cache storage between sessions is not an approved feature and requires explicit user approval before implementation.
 
-### 9.6 Version and Mod Change Detection
+### 10.6 Version and Mod Change Detection
 
 **Detection methods:**
-- ACF `buildid` field comparison between sessions.
-- `.scs` archive timestamp comparison.
-- Mod profile configuration comparison (enabled/disabled mods).
-- Game executable version detection.
+- `.scs` archive timestamp comparison (in-memory during a session only).
+- Definition file content comparison (in-memory during a session only).
+- Game executable version detection (in-memory during a session only).
 
-**Sources:**
-- Community mod tracking practices (2024-2026)
+Any comparison requiring persistent records between sessions — such as saved installation paths, filesystem inventories, or prior file modification times — is a future design decision requiring explicit user approval. HaulInfo does not persistently store such records.
 
-### 9.7 Failure Recovery and Preservation of Existing Valid Data
+### 10.7 Failure Recovery and Preservation of Existing Valid Data
 
-- Before full rebuild, back up extracted `.sii` files and processed graph data.
-- On failure, fall back to previous cache version, or degrade to base game only (without DLCs/map mods).
+Extracted `.sii` file contents and processed graph data are held temporarily in memory during a running session. They are not persistently backed up. On extraction or processing failure, HaulInfo may discard the temporary in-memory data and fall back to processing base-game-only content, or retry the operation without relying on previously cached results.
 
-**Sources:**
-- Community mod management practices (2024-2026)
+No persistent database, cache, or backup of extracted game data is created or assumed.
 
-### 9.8 Background Processing Requirements
+### 10.8 Background Processing Requirements
 
-- Archive reading and decompression.
-- `.sii` file parsing.
-- Road graph construction.
-- Database writes.
+Background processing during a running session may include:
 
-**Sources:**
-- Community best practices (2024-2026)
+- Archive reading and decompression (in-memory).
+- `.sii` file parsing (in-memory).
+- Road graph construction (in-memory).
+
+HaulInfo does not assume a persistent database or persistent storage architecture. Database writes or any persistent storage of extracted data require explicit user approval and are a future design decision.
 ## 11. Legal and Licensing Considerations
 
 ### 11.1 SCS Game Asset Extraction and Redistribution
@@ -733,14 +651,6 @@ Any companion app would need to rely on a combination of telemetry data (for cur
 **Sources:**
 - Copyright law
 - SCS Software EULA
-
-### 11.3 Steam Workshop Restrictions
-
-**Steam Workshop terms:** User-created content on Workshop is governed by Steam's Terms of Service and Workshop terms. Redistribution of Workshop content may be restricted.
-
-**Sources:**
-- Steam Subscriber Agreement: https://www.valvesoftware.com/ssaseula
-- Steam Workshop Terms: https://steamcommunity.com/public/shared/workshopterms
 
 ### 11.4 Mod Author Licences
 
@@ -790,7 +700,7 @@ Any companion app would need to rely on a combination of telemetry data (for cur
 
 No unsupported numerical estimates (e.g., "20,000–30,000 base road segments", "100,000+ ProMods segments", "500,000+ combined segments", "200,000+ nodes") will be included. Specific database sizes or extraction times will not be claimed unless a reproducible measurement, exact test environment, methodology, and source are provided. If the values cannot be verified, they are removed. Performance factors are explained qualitatively instead.
 
-### 11.1 Archive Reading and Decompression
+### 12.1 Archive Reading and Decompression
 
 **Performance:** LZMA compression offers better compression but slower decompression; LZ4 is faster but less compact. Reading individual files from `.scs` archives without full decompression is preferred for incremental processing.
 
@@ -798,7 +708,7 @@ No unsupported numerical estimates (e.g., "20,000–30,000 base road segments", 
 - scs_t performance data (2024-2026, unverified — scs_t archive tool repository and licence not yet identified)
 - Community benchmarking
 
-### 11.2 Road Graph Construction
+### 12.2 Road Graph Construction
 
 **Complexity:** O(n) where n is the number of road segments/nodes. Graph construction involves parsing `.sii` files, building node-edge relationships, and validating topology.
 
@@ -808,14 +718,14 @@ No unsupported numerical estimates (e.g., "20,000–30,000 base road segments", 
 - Community graph construction benchmarks (2024-2026)
 - Modding tool performance data
 
-### 11.3 Database Size and Access
+### 12.3 Database Size and Access
 
 **Expected database sizes:** Specific sizes cannot be verified without a reproducible measurement, exact test environment, methodology, and source. If verified measurements become available, they should be documented with full methodology. Performance characteristics should be described qualitatively: read-heavy access patterns (route calculation), write-heavy initial extraction, and cache update operations.
 
 **Sources:**
 - Community project reports (2024-2026) — only as unverified references, not claims
 
-### 11.4 Modest Windows Hardware
+### 12.4 Modest Windows Hardware
 
 **Target configuration:** Typical Windows 10/11 home system with integrated or modest discrete graphics, 8GB RAM, modern CPU.
 
@@ -826,7 +736,7 @@ No unsupported numerical estimates (e.g., "20,000–30,000 base road segments", 
 - Community performance data (2024-2026)
 ## 13. Phone Companion and Future Integration Considerations
 
-### 12.1 ETS2 Information Useful to a Companion App
+### 13.1 ETS2 Information Useful to a Companion App
 
 **Player state:** Position (x, y, z), heading, speed, fuel level, engine RPM.
 
@@ -838,7 +748,7 @@ No unsupported numerical estimates (e.g., "20,000–30,000 base road segments", 
 - Community telemetry tool reports (2024-2026)
 - Mod developer reports
 
-### 12.2 What Should NOT Be Designed in Phase 2
+### 13.2 What Should NOT Be Designed in Phase 2
 
 - Mobile application frameworks.
 - PC-to-phone communication protocols (beyond basic design planning).
@@ -853,19 +763,19 @@ These belong to later phases.
 ## 14. Technical Conclusions
 
 **Confirmed findings:**
-1. ETS2 installations can be discovered via Steam library folders and ACF parsing (App ID 227300).
-2. `.scs` archives contain `.sii` definition files and binary asset data.
-3. Road network data is stored in text-based SCS definitions with road segments, nodes, and connections.
-4. DLCs add specific map regions with identifiable App IDs (list provided in Section 1.2).
-5. The ETS2 coordinate system uses metres as the likely unit (based on observed coordinate ranges), but the exact origin, orientation, and scale remain unverified.
-6. No publicly available interface supports modifying ETS2's navigation destination or providing two-way navigation synchronisation. Interfaces exist for reading player state and navigation data, but not for sending destinations back to the game.
-7. Existing open-source projects (rigdeck, TruckNav-Sim) provide partial extraction capabilities under verified licences.
+1. ETS2 installations can be discovered through known installation locations and local metadata, without Steam account access or online Steam APIs.
+2. `.scs` archives may contain `.sii` definition files and binary asset data. (Based on community reverse engineering of SCS archive format; not verified against primary SCS documentation.)
+3. Road network data is stored in text-based SCS definitions with road segments, nodes, and connections. (Based on community reverse engineering of `.sii` definition files; not verified against primary SCS documentation.)
+4. DLCs may add additional `.scs` archive files within the ETS2 installation directory. Assignment of specific archive files to specific DLCs is not established without a verified identification method.
+5. No destination-modification interface was identified in the inspected public SDK and community-plugin sources. Interfaces exist for reading player state and navigation data, but not for sending destinations back to the game.
+6. Existing open-source projects (rigdeck, TruckNav-Sim) provide partial extraction capabilities under verified licences.
 
 **Likely findings (unverified but probable):**
-1. `.sii` files use text-based format (possibly JSON or custom key-value).
+1. `.sii` files use text-based format (SCS-specific text format; not JSON).
 2. Road segments reference nodes by ID, forming a graph structure.
 3. Roundabouts and interchanges have special encoding in node definitions.
 4. Coordinate transformation to external frameworks requires undocumented scaling factors.
+5. The ETS2 coordinate system uses metres as the likely unit (based on observed coordinate ranges), but the exact origin, orientation, and scale remain unverified.
 
 **Unknown findings:**
 1. Exact `.sii` file format specification (field names, data types, structure).
@@ -901,17 +811,31 @@ These belong to later phases.
 - Community reverse engineering projects
 ## 16. Sources
 
-- Community reverse engineering of ETS2 `.scs` and `.sii` formats (2024-2026)
-- SCS Software official documentation and forum announcements (2024-2026)
-  - https://modding.scssoft.com/wiki/Main_Page
-- ETS2 modding community resources
-- Steam API documentation
-  - https://partner.steamgames.com/documentation/api
-- GitHub repositories for ETS2 mod tools:
-  - rigdeck: https://github.com/Matozanato/rigdeck (MIT licence, verified)
-  - TruckNav-Sim: https://github.com/Rares-Muntean/TruckNav-Sim (v0.3.2 release announced GPL-3.0 change; LICENSE file contains GPL-3.0)
-  - Truck Companion: https://github.com/Nethercap/truck-companion (license requires current verification)
-  - scs_t: Requires identification of actual repository. The repository at https://github.com/nlhans/scs-sdk-plugin is the SCS telemetry SDK, not the SCS archive tool. The actual scs_t archive tool repository and its current licence status require further research. Marked as unresolved until verified.
-- SCS telemetry SDK documentation
-  - https://github.com/nlhans/scs-sdk-plugin and https://github.com/RenCloud/scs-sdk-plugin
-- Community coordinate analysis projects
+- SCS Software modding wiki: https://modding.scssoft.com/wiki/Main_Page
+  - Supports: General ETS2 modding documentation, archive format overview, telemetry SDK references
+- SCS Software Terms of Use: https://www.scssoftware.com/terms
+  - Supports: Legal considerations for game asset extraction (Section 11.1)
+- SCS Software EULA: https://www.scssoftware.com/eula
+  - Supports: Legal considerations for game asset extraction (Section 11.1)
+- rigdeck (Matozanato): https://github.com/Matozanato/rigdeck
+  - Supports: Open-source ETS2 road network extraction tool (Sections 8.1, 11.6, 14)
+- TruckNav-Sim (Rares-Muntean): https://github.com/Rares-Muntean/TruckNav-Sim
+  - Supports: ETS2 navigation tool and licensing information (Sections 8.2, 11.6, 14)
+- Truck Companion (Nethercap): https://github.com/Nethercap/truck-companion
+  - Supports: ETS2 companion app reference (Sections 8.3, 11.6) — licence requires current verification
+- SCS SDK plugin (nlhans): https://github.com/nlhans/scs-sdk-plugin
+  - Supports: SCS telemetry SDK and community plugin implementation (Section 9)
+- RenCloud scs-sdk-plugin: https://github.com/RenCloud/scs-sdk-plugin
+  - Supports: SCS telemetry SDK reference (Section 9)
+
+The following claims in this document rely on vague or non-traceable community sources ("Community analysis...", "Modding documentation", "Community reverse engineering...") without identifiable URLs or named publications. These claims are therefore treated as unverified:
+
+- Exact `.scs` archive internal structure (Section 2.1)
+- Exact `.sii` file structure and content (Sections 2.4, 3-5)
+- Road network definitions and connectivity details (Sections 3-5)
+- Map sector organisation (Section 4.2)
+- Coordinate units, transformations, and origin (Sections 3.1, 3.2, 5.1, 5.2)
+- DLC archive-to-DLC assignment (Sections 7.2, 14)
+- Mod conflict resolution behaviour (Section 7.3)
+
+No Steamworks or Steam Workshop integration research is included in this source list, as HaulInfo does not integrate with Steam Workshop.
