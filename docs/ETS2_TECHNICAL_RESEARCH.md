@@ -490,7 +490,7 @@ ETS2's lighting system includes:
 **Limitations:**
 - Navigation-focused; no 3D visualisation.
 - No DLC handling reported.
-- ProMods compatibility: The TruckNav-Sim README contains contradictory statements about ProMods support. Its feature list declares "Map Mods: Multiple Map Mods ✅", while its compatibility note warns ⚠️ "Caution Real Company Name Mods: Not supported anymore with the latest version." The v0.5.1 release (07 Oct 2026) explicitly announced "ProMods Compatibility: Updated ProMods definitions to the latest releases (2.84 & 1.64)." This indicates ProMods 2.84 and Canada 1.64 compatibility, but does not claim that every ProMods version is supported, nor does it mean that no ProMods compatibility evidence exists.
+- ProMods compatibility: The TruckNav-Sim README includes a feature list declaring "Map Mods: Multiple Map Mods ✅" and a compatibility note regarding "Real Company Name Mods: Not supported anymore with the latest version." Neither statement explicitly addresses ProMods support or lack thereof. The v0.5.1 release (07 Oct 2026) explicitly announced "ProMods Compatibility: Updated ProMods definitions to the latest releases (2.84 & 1.64)," establishing ProMods 2.84 and Canada 1.64 compatibility. No claim is made that every ProMods version is supported, and the README does not explicitly state that no ProMods compatibility exists.
 
 **Licence:** GPL-3.0. The v0.3.2 release announced a change to GPL-3.0. The current LICENSE file contains GPL-3.0.
 
