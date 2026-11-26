@@ -3,7 +3,7 @@
 **Project:** HaulInfo  
 **Phase:** Phase 2 — ETS2 Technical Research  
 **Status:** Under review  
-**Research date:** November 25, 2026
+**Research date:** November 26, 2026
 ## 1. ETS2 Installation and Game-Files Locations
 
 ### 1.1 Typical Installation Structure
@@ -490,7 +490,12 @@ ETS2's lighting system includes:
 **Limitations:**
 - Navigation-focused; no 3D visualisation.
 - No DLC handling reported.
-- ProMods compatibility: The TruckNav-Sim README includes a feature list declaring "Map Mods: Multiple Map Mods ✅" and a compatibility note regarding "Real Company Name Mods: Not supported anymore with the latest version." Neither statement explicitly addresses ProMods support or lack thereof. The v0.5.1 release (07 Oct 2026) explicitly announced "ProMods Compatibility: Updated ProMods definitions to the latest releases (2.84 & 1.64)," establishing ProMods 2.84 and Canada 1.64 compatibility. No claim is made that every ProMods version is supported, and the README does not explicitly state that no ProMods compatibility exists.
+- TruckNav-Sim release history (as of 26 Nov 2026):
+  - v0.6.0 (13 Nov 2026): "Complete UI Overhaul & More Trip Diagnostics". Major UI overhaul, new trip management features, enhanced navigation stability. Added native engine support for ETS2 Iceland DLC and More European Cities. Dynamic mod sizing. Regional download fallback for restricted regions.
+  - v0.5.2 (11 Oct 2026): "Community Map Mod Expansion". Added support for ATS Expansion, Coast to Coast, Reforma Suite, Grand Utopia, Ro-Extended, RusMap. Refactored scale calculation to dynamically load from scale.json.
+  - v0.5.1 (07 Oct 2026): "Real-Time ETAs & 1.61 Map Compatibility". Updated ProMods definitions to 2.84 & 1.64. Added real-time route estimates.
+  - v0.3.2 (13 Mar 2026): "The Web Connectivity & Telemetry Refactor". Announced GPL-3.0 licence.
+- ProMods compatibility: The TruckNav-Sim README includes a feature list declaring "Map Mods: Multiple Map Mods ✅" and a compatibility note regarding "Real Company Name Mods: Not supported anymore with the latest version." Neither statement explicitly addresses ProMods support or lack thereof. The v0.5.1 release (07 Oct 2026) explicitly announced "ProMods Compatibility: Updated ProMods definitions to the latest releases (2.84 & 1.64)," establishing ProMods 2.84 and Canada 1.64 compatibility. The v0.5.2 release (11 Oct 2026) expanded community map mod support but does not claim ProMods-specific changes. The v0.6.0 release (13 Nov 2026) added native engine support for ETS2 Iceland DLC and More European Cities. No claim is made that every ProMods version is supported, and the README does not explicitly state that no ProMods compatibility exists.
 
 **Licence:** GPL-3.0. The v0.3.2 release announced a change to GPL-3.0. The current LICENSE file contains GPL-3.0.
 
@@ -530,22 +535,40 @@ ETS2's lighting system includes:
 
 ### 9.1 Official SCS Telemetry SDK
 
-SCS Software has released an official telemetry SDK. The SDK provides documented interfaces for reading certain game state information, but does not expose complete navigation-route geometry or all game state data. Refer to the SCS SDK plugin repository for documented fields.
+SCS Software has released an official telemetry SDK. The SDK provides a generic telemetry framework (scssdk_telemetry.h, scssdk_telemetry_channel.h) for channel callback registration, but does **not** define specific channel names such as position, speed, or RPM in its generic headers. Specific ETS2 channel names are defined in the game-specific headers `scssdk_eut2.h` and `scssdk_telemetry_eut2.h` (bundled with the plugin at `scs_sdk_1_4/include/eurotrucks2/`).
 
 **Direct SDK repository:**
 - SCS SDK plugin repository (nlhans/scs-sdk-plugin): https://github.com/nlhans/scs-sdk-plugin
 - RenCloud scs-sdk-plugin: https://github.com/RenCloud/scs-sdk-plugin
+- SCS SDK headers (scs_sdk_1_4/include/): scssdk.h, scssdk_value.h, scssdk_telemetry.h, scssdk_telemetry_channel.h, scssdk_telemetry_event.h
 
-**SDK-explicitly exposed fields** (as defined in the SDK interfaces): player world position (x, y, z), heading/yaw, speed, fuel level, engine RPM. These fields provide high-level state data for the player's truck.
+**SDK framework**: The SDK provides `scs_telemetry_init()`, `scs_telemetry_shutdown()`, and `register_for_channel()` callbacks. Channel names are passed as strings (e.g. `SCS_TELEMETRY_<name>`). The SDK does not impose a fixed set of channel names; game-specific headers define the actual identifiers.
 
-**Community plugin implementation** (nlhans/ets2-sdk-plugin): This community-developed plugin uses the SCS telemetry SDK and exposes additional shared-memory output including player position, rotation, speed, RPM, fuel, job source/destination city names, and other truck/job information. Its README documents these shared-memory fields, but they are not all officially documented by the SCS SDK.
+**Verified ETS2 telemetry channels** (from community plugin registration at `ets2-telemetry/src/ets2-telemetry.cpp`, using game-specific headers `eurotrucks2/scssdk_eut2.h` and `eurotrucks2/scssdk_telemetry_eut2.h`):
+
+| Channel (as registered) | Type | SDK header field | Description |
+|---|---|---|---|
+| `TRUCK_CHANNEL_navigation_speed_limit` | float | `tel_rev4.speedLimit` | Navigation speed limit |
+| `TRUCK_CHANNEL_navigation_distance` | float | `tel_rev4.routeDistance` | Scalar distance to destination waypoint |
+| `TRUCK_CHANNEL_navigation_time` | float | `tel_rev4.routeTime` | Estimated time to destination |
+| `TRUCK_CHANNEL_fuel_range` | float | `tel_rev4.fuelRange` | Remaining fuel range |
+| `TRUCK_CHANNEL_odometer` | float | `tel_rev3.truckOdometer` | Total distance travelled (odometer) |
+| `TRUCK_CHANNEL_cruise_control` | float | `tel_rev3.cruiseControlSpeed` | Cruise control speed setting |
+
+Each channel is registered via `register_for_channel(SCS_TELEMETRY_<name>, type, flags, callback, context)` using `SCS_VALUE_TYPE_float` or `SCS_VALUE_TYPE_bool`. The `SCS_TELEMETRY_` prefix and channel constant definitions reside in the Euro Truck Simulator 2-specific SDK headers, not in the generic `scssdk_telemetry_channel.h`.
+
+**SDK fields explicitly documented** (as reported by the SDK interfaces and community plugin): player world position (x, y, z), heading/yaw, speed, fuel level, engine RPM. These are the high-level state data fields the SDK provides through its channel specification.
+
+**Community plugin implementation** (nlhans/ets2-sdk-plugin): This community-developed plugin uses the SCS telemetry SDK and registers the additional shared-memory output channels listed above (navigation_distance, navigation_time, navigation_speed_limit, fuel_range, odometer, cruise_control) plus player position, rotation, speed, RPM, fuel, job source/destination city names, and other truck/job information. Its README documents these shared-memory fields, but they are not all officially documented by the SCS SDK generic headers.
 
 **Information not established by available evidence**: The SDK does not expose road-by-road route geometry, destination waypoint coordinates, AI traffic data, or any two-way modification of game state. Claims that telemetry includes route geometry are not supported by the SDK documentation. The detailed navigation graph is stored in game definition files (`.sii` within `.scs` archives) and is not available through telemetry interfaces.
 
 **Sources:**
-- SCS SDK plugin repository (nlhans/scs-sdk-plugin, RenCloud/scs-sdk-plugin) — source code and README for explicitly documented fields
+- SCS SDK headers (scs_sdk_1_4/include/): scssdk.h, scssdk_value.h, scssdk_telemetry.h, scssdk_telemetry_channel.h, scssdk_telemetry_event.h
+- ETS2-specific SDK headers: eurotrucks2/scssdk_eut2.h, eurotrucks2/scssdk_telemetry_eut2.h
+- Community plugin registration code: ets2-telemetry/src/ets2-telemetry.cpp
 - SCS Software official channels — announcement of telemetry SDK release
-- nlhans/ets2-sdk-plugin — community plugin README for shared-memory output fields
+- nlhans/ets2-sdk-plugin — community plugin README and source code
 
 ### 9.2 Telemetry Data Versus Complete Navigation Route
 
