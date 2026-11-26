@@ -546,14 +546,21 @@ SCS Software has released an official telemetry SDK. The SDK provides a generic 
 
 **Verified ETS2 telemetry channels** (from community plugin registration at `ets2-telemetry/src/ets2-telemetry.cpp`, using game-specific headers `eurotrucks2/scssdk_eut2.h` and `eurotrucks2/scssdk_telemetry_eut2.h`):
 
-| Channel (as registered) | Type | SDK header field | Description |
-|---|---|---|---|
-| `TRUCK_CHANNEL_navigation_speed_limit` | float | `tel_rev4.speedLimit` | Navigation speed limit |
-| `TRUCK_CHANNEL_navigation_distance` | float | `tel_rev4.routeDistance` | Scalar distance to destination waypoint |
-| `TRUCK_CHANNEL_navigation_time` | float | `tel_rev4.routeTime` | Estimated time to destination |
-| `TRUCK_CHANNEL_fuel_range` | float | `tel_rev4.fuelRange` | Remaining fuel range |
-| `TRUCK_CHANNEL_odometer` | float | `tel_rev3.truckOdometer` | Total distance travelled (odometer) |
-| `TRUCK_CHANNEL_cruise_control` | float | `tel_rev3.cruiseControlSpeed` | Cruise control speed setting |
+**Navigation-related channels**:
+
+| SCS SDK channel identifier | SDK value type | Plugin destination field | SDK header source | Plugin registration source | Description and unit |
+|---|---|---|---|---|---|
+| `TRUCK_CHANNEL_navigation_speed_limit` | `SCS_VALUE_TYPE_float` | `telemPtr->tel_rev4.speedLimit` | `eurotrucks2/scssdk_eut2.h` / `eurotrucks2/scssdk_telemetry_eut2.h` | `ets2-telemetry/src/ets2-telemetry.cpp`, `SCS_TELEMETRY_init()` | Navigation speed limit; unit not explicitly documented in inspected SDK version |
+| `TRUCK_CHANNEL_navigation_distance` | `SCS_VALUE_TYPE_float` | `telemPtr->tel_rev4.routeDistance` | `eurotrucks2/scssdk_eut2.h` / `eurotrucks2/scssdk_telemetry_eut2.h` | `ets2-telemetry/src/ets2-telemetry.cpp`, `SCS_TELEMETRY_init()` | Scalar distance to destination waypoint; unit not explicitly documented in inspected SDK version |
+| `TRUCK_CHANNEL_navigation_time` | `SCS_VALUE_TYPE_float` | `telemPtr->tel_rev4.routeTime` | `eurotrucks2/scssdk_eut2.h` / `eurotrucks2/scssdk_telemetry_eut2.h` | `ets2-telemetry/src/ets2-telemetry.cpp`, `SCS_TELEMETRY_init()` | Estimated time to destination; unit not explicitly documented in inspected SDK version |
+
+**Other useful telemetry channels**:
+
+| SCS SDK channel identifier | SDK value type | Plugin destination field | SDK header source | Plugin registration source | Description and unit |
+|---|---|---|---|---|---|
+| `TRUCK_CHANNEL_fuel_range` | `SCS_VALUE_TYPE_float` | `telemPtr->tel_rev4.fuelRange` | `eurotrucks2/scssdk_eut2.h` / `eurotrucks2/scssdk_telemetry_eut2.h` | `ets2-telemetry/src/ets2-telemetry.cpp`, `SCS_TELEMETRY_init()` | Remaining fuel range; unit not explicitly documented in inspected SDK version |
+| `TRUCK_CHANNEL_odometer` | `SCS_VALUE_TYPE_float` | `telemPtr->tel_rev3.truckOdometer` | `eurotrucks2/scssdk_eut2.h` / `eurotrucks2/scssdk_telemetry_eut2.h` | `ets2-telemetry/src/ets2-telemetry.cpp`, `SCS_TELEMETRY_init()` | Total distance travelled (odometer); unit not explicitly documented in inspected SDK version |
+| `TRUCK_CHANNEL_cruise_control` | `SCS_VALUE_TYPE_float` | `telemPtr->tel_rev3.cruiseControlSpeed` | `eurotrucks2/scssdk_eut2.h` / `eurotrucks2/scssdk_telemetry_eut2.h` | `ets2-telemetry/src/ets2-telemetry.cpp`, `SCS_TELEMETRY_init()` | Cruise control speed setting; unit not explicitly documented in inspected SDK version |
 
 Each channel is registered via `register_for_channel(SCS_TELEMETRY_<name>, type, flags, callback, context)` using `SCS_VALUE_TYPE_float` or `SCS_VALUE_TYPE_bool`. The `SCS_TELEMETRY_` prefix and channel constant definitions reside in the Euro Truck Simulator 2-specific SDK headers, not in the generic `scssdk_telemetry_channel.h`.
 
@@ -561,7 +568,7 @@ Each channel is registered via `register_for_channel(SCS_TELEMETRY_<name>, type,
 
 **Community plugin implementation** (nlhans/ets2-sdk-plugin): This community-developed plugin uses the SCS telemetry SDK and registers the additional shared-memory output channels listed above (navigation_distance, navigation_time, navigation_speed_limit, fuel_range, odometer, cruise_control) plus player position, rotation, speed, RPM, fuel, job source/destination city names, and other truck/job information. Its README documents these shared-memory fields, but they are not all officially documented by the SCS SDK generic headers.
 
-**Information not established by available evidence**: The SDK does not expose road-by-road route geometry, destination waypoint coordinates, AI traffic data, or any two-way modification of game state. Claims that telemetry includes route geometry are not supported by the SDK documentation. The detailed navigation graph is stored in game definition files (`.sii` within `.scs` archives) and is not available through telemetry interfaces.
+**Information not established by available evidence**: No dedicated destination-waypoint coordinate channel was identified in the inspected SDK version. The SDK does not expose road-by-road route geometry, AI traffic data, or any two-way modification of game state. Claims that telemetry includes route geometry are not supported by the SDK documentation. The detailed navigation graph is stored in game definition files (`.sii` within `.scs` archives) and is not available through telemetry interfaces.
 
 **Sources:**
 - SCS SDK headers (scs_sdk_1_4/include/): scssdk.h, scssdk_value.h, scssdk_telemetry.h, scssdk_telemetry_channel.h, scssdk_telemetry_event.h
